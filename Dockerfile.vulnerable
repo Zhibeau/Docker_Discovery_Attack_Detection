@@ -1,0 +1,20 @@
+FROM docker:dind
+
+# Copy custom entrypoint
+COPY <<-"EOF" /usr/local/bin/custom-entrypoint.sh
+#!/bin/sh
+set -e
+
+# Start Docker daemon with explicit arguments
+dockerd \
+  --host=unix:///var/run/docker.sock \
+  --host=tcp://0.0.0.0:2375 \
+  --tls=false \
+  --data-root=/var/lib/docker
+EOF
+
+RUN chmod +x /usr/local/bin/custom-entrypoint.sh
+
+EXPOSE 2375
+
+ENTRYPOINT ["custom-entrypoint.sh"]

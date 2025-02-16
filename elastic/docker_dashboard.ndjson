@@ -1,0 +1,74 @@
+{
+  "version": "7.17.0",
+  "objects": [
+    {
+      "id": "docker-api-access",
+      "type": "visualization",
+      "attributes": {
+        "title": "Docker API Access Events",
+        "visState": {
+          "type": "metric",
+          "aggs": [
+            {
+              "id": "1",
+              "type": "count",
+              "schema": "metric"
+            }
+          ],
+          "params": {
+            "addTooltip": true,
+            "addLegend": false,
+            "type": "metric",
+            "metric": {
+              "percentageMode": false,
+              "useRanges": false,
+              "colorSchema": "Green to Red",
+              "metricColorMode": "None",
+              "colorsRange": [
+                {
+                  "from": 0,
+                  "to": 10000
+                }
+              ],
+              "labels": {
+                "show": true
+              },
+              "style": {
+                "bgFill": "#000",
+                "bgColor": false,
+                "labelColor": false,
+                "subText": "",
+                "fontSize": 60
+              }
+            }
+          }
+        },
+        "uiStateJSON": "{}",
+        "description": "",
+        "savedSearchId": "docker-api-events"
+      }
+    },
+    {
+      "id": "docker-api-events",
+      "type": "search",
+      "attributes": {
+        "title": "Docker API Events",
+        "columns": [
+          "@timestamp",
+          "docker.api.method",
+          "docker.api.endpoint",
+          "source.ip",
+          "event.outcome"
+        ],
+        "sort": [
+          "@timestamp",
+          "desc"
+        ],
+        "query": {
+          "query": "event.module:docker",
+          "language": "kuery"
+        }
+      }
+    }
+  ]
+}

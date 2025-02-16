@@ -1,0 +1,58 @@
+title: Docker API Unauthorized Access and Enumeration
+id: 5f94acd4-8833-4e89-9e6d-3b3b5c6c8d9a
+status: experimental
+description: Detects unauthorized access attempts and enumeration activities on Docker API
+author: Security Team
+date: 2024/02/16
+logsource:
+    product: docker
+    service: daemon
+detection:
+    selection_unauthorized:
+        type: 
+            - 'api_request'
+        method:
+            - 'GET'
+            - 'POST'
+        path:
+            - '/v*/containers/json'
+            - '/v*/images/json'
+            - '/v*/info'
+            - '/v*/version'
+            - '/v*/secrets/*'
+            - '/v*/configs/*'
+        status: 401
+
+    selection_enumeration:
+        type: 'api_request'
+        method: 'GET'
+        path:
+            - '/v*/containers/json'
+            - '/v*/images/json'
+            - '/v*/info'
+        count: '>5'
+        timeframe: 5m
+
+    selection_scan:
+        type: 'connection'
+        port: 
+            - 2375
+            - 2376
+        count: '>10'
+        timeframe: 1m
+
+    condition: selection_unauthorized OR selection_enumeration OR selection_scan
+
+falsepositives:
+    - Legitimate Docker API clients with incorrect credentials
+    - CI/CD systems performing container management
+    - Container monitoring tools
+
+level: high
+
+tags:
+    - attack.discovery
+    - attack.t1613
+    - attack.container
+    - MITRE ATT&CK T1613
+    - container security

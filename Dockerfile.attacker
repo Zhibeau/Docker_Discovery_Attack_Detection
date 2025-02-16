@@ -1,0 +1,19 @@
+FROM ubuntu:20.04
+
+RUN apt-get update && apt-get install -y \
+    masscan \
+    curl \
+    docker.io \
+    python3 \
+    python3-pip \
+    libpcap-dev \
+    iproute2 \
+    iputils-ping \
+    net-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY attack_scenario.sh /root/attack_scenario.sh
+RUN chmod +x /root/attack_scenario.sh
+
+WORKDIR /root
+CMD ["tail", "-f", "/dev/null"]

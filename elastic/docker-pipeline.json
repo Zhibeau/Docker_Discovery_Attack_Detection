@@ -1,0 +1,25 @@
+{
+  "description": "Pipeline for processing Docker logs",
+  "processors": [
+    {
+      "json": {
+        "field": "message",
+        "target_field": "docker_message"
+      }
+    },
+    {
+      "grok": {
+        "field": "message",
+        "patterns": [
+          "%{TIMESTAMP_ISO8601:timestamp} %{WORD:level} %{GREEDYDATA:message}"
+        ]
+      }
+    },
+    {
+      "date": {
+        "field": "timestamp",
+        "formats": ["ISO8601"]
+      }
+    }
+  ]
+}

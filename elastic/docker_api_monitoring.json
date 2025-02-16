@@ -1,0 +1,69 @@
+{
+  "description": "Docker API Behavioral Monitoring",
+  "query": {
+    "bool": {
+      "should": [
+        {
+          "term": {
+            "docker.api.method": "GET"
+          }
+        },
+        {
+          "terms": {
+            "docker.api.endpoint": [
+              "/containers/json",
+              "/images/json",
+              "/info",
+              "/version"
+            ]
+          }
+        }
+      ],
+      "filter": [
+        {
+          "range": {
+            "event.count": {
+              "gt": 10
+            }
+          }
+        },
+        {
+          "range": {
+            "event.duration": {
+              "lte": "5m"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "trigger": {
+    "schedule": {
+      "interval": "5m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "indices": ["docker-*"]
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.hits.total": {
+        "gt": 0
+      }
+    }
+  },
+  "actions": {
+    "notify": {
+      "throttle_period": "15m",
+      "email": {
+        "to": "security@example.com",
+        "subject": "Suspicious Docker API Activity Detected",
+        "body": "Multiple Docker API requests detected from {{ctx.payload.hits.hits.0._source.source.ip}}"
+      }
+    }
+  }
+}

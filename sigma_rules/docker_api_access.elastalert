@@ -1,0 +1,13 @@
+Nothing to do!
+Sigmac will be deprecated by the end of 2022 in favour of sigma-cli and pySigma. Please stop contributing backends to this tool. Limited support is offered until the end of 2023, especially for backends that haven't been migrated yet.
+ 
+usage: sigmac [-h] [--recurse] [--filter FILTER]
+              [--target {devo,hedera,fortisiem,stix,sentinel-rule,arcsight-esm,elastalert,netwitness,humio,xpack-watcher,graylog,logiq,logpoint,es-rule,sql,datadog-logs,dnif,uberagent,kibana,fireeye-helix,lacework,carbonblack,es-qs-lr,es-eql,csharp,es-dsl,sysmon,grep,ee-outliers,crowdstrike,limacharlie,sumologic,sumologic-cse,splunkdm,es-qs,sqlite,ala-rule,powershell,arcsight,splunk,netwitness-epl,splunkxml,ala,streamalert,elastalert-dsl,mdatp,kibana-ndjson,qualys,es-rule-eql,hawk,fieldlist,athena,qradar,chronicle,sumologic-cse-rule,opensearch-monitor}]
+              [--lists] [--lists-files-after-date LISTS_FILES_AFTER_DATE]
+              [--config CONFIG] [--output OUTPUT]
+              [--output-fields OUTPUT_FIELDS] [--output-format {json,yaml}]
+              [--output-extention OUTPUT_EXTENTION] [--print0]
+              [--backend-option BACKEND_OPTION]
+              [--backend-config BACKEND_CONFIG] [--backend-help BACKEND_HELP]
+              [--defer-abort] [--ignore-backend-errors] [--verbose] [--debug]
+              [inputs [inputs ...]]

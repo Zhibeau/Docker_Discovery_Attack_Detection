@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  vulnerable-docker:
+    build:
+      context: .
+      dockerfile: Dockerfile.vulnerable
+    privileged: true
+    ports:
+      - "2375:2375"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - docker_logs:/var/lib/docker/containers
+    networks:
+      - attack_net
+
+  attacker:
+    build:
+      context: .
+      dockerfile: Dockerfile.attacker
+    depends_on:
+      - vulnerable-docker
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - attack_net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - attack_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - attack_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.0
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - snort_logs:/var/log/snort:ro
+    environment:
+      - ELASTIC_USERNAME=elastic
+      - ELASTIC_PASSWORD=changeme
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - KIBANA_HOST=kibana:5601
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme
+    command: ["filebeat", "-e", "--strict.perms=false"]
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
+    networks:
+      - attack_net
+
+  snort:
+    image: linton/docker-snort
+    volumes:
+      - ./snort_rules:/etc/snort/rules
+      - ./snort_rules/snort.conf:/etc/snort/snort.conf:ro
+      - snort_logs:/var/log/snort
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command: ["snort", "-A", "console", "-c", "/etc/snort/snort.conf", "-i", "eth0"]
+
+networks:
+  attack_net:
+    driver: bridge
+
+volumes:
+  es_data:
+  docker_logs:
+  snort_logs:
