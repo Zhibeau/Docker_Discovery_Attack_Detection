@@ -1,15 +1,25 @@
 FROM docker:dind
 
+# Install tcpdump for network monitoring
+RUN apk add --no-cache tcpdump
+
 # Copy custom entrypoint
 COPY <<-"EOF" /usr/local/bin/custom-entrypoint.sh
 #!/bin/sh
 set -e
 
-# Start Docker daemon with explicit arguments
+# Start tcpdump in background
+tcpdump -i any port 2375 -l -n -v >> /var/lib/docker/containers/tcpdump.log 2>&1 &
+
+# Start Docker daemon with explicit arguments and audit logging
 dockerd \
   --host=unix:///var/run/docker.sock \
   --host=tcp://0.0.0.0:2375 \
   --tls=false \
+  --log-level=debug \
+  --log-driver=json-file \
+  --log-opt max-size=10m \
+  --log-opt max-file=3 \
   --data-root=/var/lib/docker
 EOF
 

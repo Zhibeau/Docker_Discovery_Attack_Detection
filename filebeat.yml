@@ -11,11 +11,27 @@ filebeat.inputs:
         overwrite_keys: true
         add_error_key: true
         process_array: false
+    - drop_event:
+        when:
+          not:
+            or:
+              - contains:
+                  message: "port 2375"
+              - contains:
+                  message: "TCP connection"
+              - contains:
+                  message: "network connection"
+              - contains:
+                  message: "scan"
+              - contains:
+                  message: "GET /"
+              - contains:
+                  message: "POST /"
 
 output.elasticsearch:
   hosts: ["elasticsearch:9200"]
   indices:
-    - index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+    - index: "filebeat-network-%{+yyyy.MM.dd}"
 
 setup.kibana:
   host: "kibana:5601"

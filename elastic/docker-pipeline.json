@@ -1,24 +1,37 @@
 {
-  "description": "Pipeline for processing Docker logs",
+  "description": "Pipeline for processing Docker and network logs",
   "processors": [
     {
       "json": {
         "field": "message",
-        "target_field": "docker_message"
+        "target_field": "docker_message",
+        "ignore_failure": true
       }
     },
     {
       "grok": {
         "field": "message",
         "patterns": [
-          "%{TIMESTAMP_ISO8601:timestamp} %{WORD:level} %{GREEDYDATA:message}"
-        ]
+          "%{TIMESTAMP_ISO8601:timestamp} %{WORD:level} %{GREEDYDATA:message}",
+          "Starting masscan %{GREEDYDATA:masscan_version} at %{TIMESTAMP_ISO8601:scan_start_time}",
+          "Discovered open port %{NUMBER:port:int}/%{WORD:protocol} on %{IP:target_ip}",
+          "rate: %{NUMBER:scan_rate}-kpps, %{NUMBER:scan_progress}% done"
+        ],
+        "ignore_failure": true
       }
     },
     {
       "date": {
         "field": "timestamp",
-        "formats": ["ISO8601"]
+        "formats": ["ISO8601"],
+        "ignore_failure": true
+      }
+    },
+    {
+      "set": {
+        "field": "event.type",
+        "value": "network_scan",
+        "if": "ctx.message != null && (ctx.message.contains('masscan') || ctx.message.contains('port 2375') || ctx.message.contains('SYN Stealth Scan'))"
       }
     }
   ]

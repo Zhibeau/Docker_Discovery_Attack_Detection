@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Simulation d'un scan réseau pour trouver des hôtes Docker
-echo "[+] Scanning network for Docker hosts..."
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [+] Scanning network for Docker hosts..."
 # Scan plus ciblé avec un taux plus bas et une plage plus restreinte
 masscan -p2375,2376 172.20.0.0/24 --rate=100 --wait=0
 
